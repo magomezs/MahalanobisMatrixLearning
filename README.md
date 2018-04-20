@@ -5,9 +5,9 @@ This repository include three caffe python layers, which are used to learnt a Ma
 1. data_analysis_queues.py is a python module containing the caffe layer called DataAnalysisQueues.
 2. data_analysis_weighted_average.py is a python module containing the caffe layer called DataAnalysisWeightedAverage.
 
-<br />
 These two layers estimate a Mahalanobis Matrix from the features corresponging to pairs of people images.
 
+<br />
 
 3. connection_function.py is a python module containing the caffe layer called ConnectionFunction.<br />
    This layer can computes two different distances, Euclidean and Mahalanobis distances, to compare the features corresponding    to pair of people images. 
