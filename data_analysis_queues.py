@@ -8,9 +8,9 @@ class DataAnalysisQueues(caffe.Layer):
 	def setup(self, bottom, top):
 		#Checking inputs and outputs
 		if len(bottom)!=3:
-			raise Exception('must have exactly three inputs: 2 descriptors and 1 label')
+			raise Exception('must have exactly three inputs: 2 features and 1 label')
 		if len(top)!=1:
-			raise Exception('one output: MM')
+			raise Exception('one output: Mahalanobis Matrix')
 			
 		#Parameters reading
 		params = eval(self.param_str)
@@ -32,8 +32,7 @@ class DataAnalysisQueues(caffe.Layer):
                 #output has Mahalanobis Matrix dimensions
                 top[0].reshape(bottom[0].channels, bottom[0].channels)
 
-		#differnce has shape of inputs
-		self.diff = np.zeros((bottom[0].num, bottom[0].channels), dtype=np.float32)     # Descripstors difference has descriptors dimensions
+		self.diff = np.zeros((bottom[0].num, bottom[0].channels), dtype=np.float32)     # Features difference has descriptors dimensions
                 self.Smean = np.zeros((bottom[0].channels), dtype=np.float32)			# Similarity expected values array
 		self.Dmean = np.zeros((bottom[0].channels), dtype=np.float32)			# Dissimilarity expedted values array
 		self.S = np.identity((bottom[0].channels), dtype=np.float32)			# Similarity covariance matrix
