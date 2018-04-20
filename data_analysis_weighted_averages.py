@@ -4,38 +4,52 @@ import os
 import io
 import sys
 	
-
 class DataAnalysisWeightedAverages(caffe.Layer):
 	def setup(self, bottom, top):
+		#Checking inputs and outputs
 		if len(bottom)!=3:
-			raise Exception('must have exactly three inputs: 2 descriptors and 1 label')
+			raise Exception('must have exactly three inputs: 2 features and 1 label')
 		if len(top)!=1:
 			raise Exception('one output: MM')
-		self.iteration = 0
-                self.Y= np.zeros((bottom[0].num, 1), dtype=np.float32)
+		
+		#Parameters reading	
 		params = eval(self.param_str)
 		self.beta = params["beta"]
        		self.snapshot = params["snapshot_step"]
-
-		self.S = np.identity((bottom[0].channels), dtype=np.float32)
-		self.D = np.identity((bottom[0].channels), dtype=np.float32)
-
+		
+		self.iteration = 0
+                self.Y = np.zeros((bottom[0].num, 1), dtype=np.float32)				# Labels array	
+		self.S = np.identity((bottom[0].channels), dtype=np.float32)			# Similarity covariance matrix
+		self.D = np.identity((bottom[0].channels), dtype=np.float32)			# Dissimilarity covariance matrix
 
 	def reshape(self, bottom, top):
 		#check input dimensions match
 		if bottom[0].count != bottom[1].count:
 			raise Exception('Inputs must have the same dimension')
-
+		#output has Mahalanobis Matrix dimensions
                 top[0].reshape(bottom[0].channels, bottom[0].channels)
 
-		#differnce has shape of inputs
-		self.diff = np.zeros((bottom[0].num, bottom[0].channels), dtype=np.float32)    #Descripstors difference has descriptors dimensions
-                self.Smean = np.zeros((bottom[0].channels), dtype=np.float32)
-		self.Dmean = np.zeros((bottom[0].channels), dtype=np.float32)
+		self.diff = np.zeros((bottom[0].num, bottom[0].channels), dtype=np.float32)     # Features difference has descriptors dimensions
+                self.Smean = np.zeros((bottom[0].channels), dtype=np.float32)			# Similarity expected values array
+		self.Dmean = np.zeros((bottom[0].channels), dtype=np.float32)			# Dissimilarity expedted values array
 		self.Stemp = np.identity((bottom[0].channels), dtype=np.float32)
 		self.Dtemp = np.identity((bottom[0].channels), dtype=np.float32)
-		self.M = np.identity((bottom[0].channels), dtype=np.float32)
+		self.M = np.identity((bottom[0].channels), dtype=np.float32) 			# Mahalanobis matrix
 		 	
+			
+			
+			
+			
+			
+			
+
+		 	
+			
+			
+			
+			
+			
+			
        		
 	def forward(self, bottom, top):
 		self.iteration=self.iteration+1
@@ -110,42 +124,6 @@ class DataAnalysisWeightedAverages(caffe.Layer):
 	
 
 
-class DataAnalysis(caffe.Layer):
-	def setup(self, bottom, top):
-		#Checking inputs and outputs
-		if len(bottom)!=3:
-			raise Exception('must have exactly three inputs: 2 descriptors and 1 label')
-		if len(top)!=1:
-			raise Exception('one output: MM')
-			
-		#Parameters reading
-		params = eval(self.param_str)
-       		self.snapshot = params["snapshot_step"]
-		self.queue_size = params["queue_size"]
-		
-		self.iteration =0
-                self.Squeue = np.zeros((self.queue_size, bottom[0].channels), dtype=np.float32)				# Similarity queue
-		self.Dqueue = np.zeros((self.queue_size, bottom[0].channels), dtype=np.float32)				# Dissimilarity queue
-		self.Svar = np.zeros((self.queue_size, bottom[0].channels, bottom[0].channels), dtype=np.float32)	# Similarity variations
-		self.Dvar = np.zeros((self.queue_size, bottom[0].channels, bottom[0].channels), dtype=np.float32)	# Dissimilarity variations
-                self.Y= np.zeros((bottom[0].num, 1), dtype=np.float32)							# Labels array
-
-
-	def reshape(self, bottom, top):
-		#check input dimensions match
-		if bottom[0].count != bottom[1].count:
-			raise Exception('Inputs must have the same dimension')
-                #output has Mahalanobis Matrix dimensions
-                top[0].reshape(bottom[0].channels, bottom[0].channels)
-
-		#differnce has shape of inputs
-		self.diff = np.zeros((bottom[0].num, bottom[0].channels), dtype=np.float32)     # Descripstors difference has descriptors dimensions
-                self.Smean = np.zeros((bottom[0].channels), dtype=np.float32)			# Similarity expected values array
-		self.Dmean = np.zeros((bottom[0].channels), dtype=np.float32)			# Dissimilarity expedted values array
-		self.S = np.identity((bottom[0].channels), dtype=np.float32)			# Similarity covariance matrix
-		self.D = np.identity((bottom[0].channels), dtype=np.float32)			# Dissimilarity covariance matrix
-		self.M = np.identity((bottom[0].channels), dtype=np.float32)			# Mahalanobis matrix
-		 	
        		
 	def forward(self, bottom, top):
 		self.iteration=self.iteration+1
