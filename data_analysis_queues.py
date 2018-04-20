@@ -4,7 +4,7 @@ import os
 import io
 import sys
 
-class DataAnalysis(caffe.Layer):
+class DataAnalysisQueues(caffe.Layer):
 	def setup(self, bottom, top):
 		#Checking inputs and outputs
 		if len(bottom)!=3:
