@@ -38,6 +38,8 @@ class DataAnalysisQueues(caffe.Layer):
 		self.S = np.identity((bottom[0].channels), dtype=np.float32)			# Similarity covariance matrix
 		self.D = np.identity((bottom[0].channels), dtype=np.float32)			# Dissimilarity covariance matrix
 		self.M = np.identity((bottom[0].channels), dtype=np.float32)			# Mahalanobis matrix
+		self.col= np.zeros((bottom[0].channels, 1), dtype=np.float32)                   
+ 		self.row= np.zeros((1, bottom[0].channels), dtype=np.float32)
 		 	
        		
 	def forward(self, bottom, top):
@@ -59,13 +61,17 @@ class DataAnalysisQueues(caffe.Layer):
 		# Similarity covariance matrix computation
 		self.Smean = np.sum(self.Squeue, axis=0)/float(self.queue_size)
 		for k in range(self.queue_size):
-			self.Svar[k,:,:] = (self.Squeue[k,:]-self.Smean[:]).transpose() * (self.Squeue[k,:]-self.Smean[:])
+			self.row[0,:] = (self.Squeue[k,:]-self.Smean[:])
+			self.col[:,0] = (self.Squeue[k,:]-self.Smean[:]).transpose()
+			self.Svar[k,:,:] = self.col * self.row
 		self.S = np.sum(self.Svar, axis=0)/float(self.queue_size)
 
 		# Dissimilarity covariance matrix computation
 		self.Dmean = np.sum(self.Dqueue, axis=0)/float(self.queue_size)
 		for k in range(self.queue_size):
-			self.Dvar[k,:,:] = (self.Dqueue[k,:]-self.Dmean[:]).transpose() * (self.Dqueue[k,:]-self.Dmean[:])
+			self.row[0,:] = (self.Dqueue[k,:]-self.Dmean[:])
+			self.col[:,0] = (self.Dqueue[k,:]-self.Dmean[:]).transpose()
+			self.Dvar[k,:,:] = self.col * self.row
 		self.D = np.sum(self.Dvar, axis=0)/float(self.queue_size)
 
 		#Mahalanobis matrix computation
