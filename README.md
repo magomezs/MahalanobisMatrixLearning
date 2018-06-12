@@ -8,7 +8,8 @@ This repository include three caffe python layers, which are used to learnt a Ma
 These two layers estimate a Mahalanobis Matrix from the features corresponging to pairs of people images.
 
 <br />
-3. triplet_data_analysis_queues.py is a python module containing the caffe layer called DataAnalysisQueues, to estimate a Mahalanobis Matrix from the features corresponding to triplets of people images.
+
+3. triplet_data_analysis_queues.py is a python module containing the caffe layer called DataAnalysisQueues, to estimate a        Mahalanobis Matrix from the features corresponding to triplets of people images.
 
 <br />
 
