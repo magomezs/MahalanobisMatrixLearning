@@ -31,7 +31,6 @@ class ConnectionFunction(caffe.Layer):
 
 		
 		self.diff = np.zeros((bottom[0].num, bottom[0].channels), dtype=np.float32)  	#Descripstors difference has descriptors dimensions
-       		self.dist = np.zeros((bottom[0].num, 1), dtype=np.float32)			#Connection function
 		
         	#connection function = output 
 		top[0].reshape(bottom[0].num)
@@ -43,9 +42,9 @@ class ConnectionFunction(caffe.Layer):
 		
 		if(self.iteration < self.changing_distance_it):	
         		#Euclidean distance computation
-			self.dist[..., 0] = np.sqrt(np.sum(self.diff**2, axis=1))   
-			top[0].data[...]=self.dist[..., 0]
-	
+			for i in range(bottom[0].num):
+				top[0].data[i] = np.dot(self.diff[i,:], self.diff[i,:])
+				
 		else:		
 			#Mahalanobis distance computation						
 			self.M = bottom[2].data[...]					#read mahalanobis matrix
