@@ -21,7 +21,9 @@ class DataAnalysisWeightedAverages(caffe.Layer):
                 self.Y = np.zeros((bottom[0].num, 1), dtype=np.float32)				# Labels array	
 		self.S = np.identity((bottom[0].channels), dtype=np.float32)			# Similarity covariance matrix
 		self.D = np.identity((bottom[0].channels), dtype=np.float32)			# Dissimilarity covariance matrix
-
+                self.Smean = np.zeros((bottom[0].channels), dtype=np.float32)
+		self.Dmean = np.zeros((bottom[0].channels), dtype=np.float32)
+		
 	def reshape(self, bottom, top):
 		#check input dimensions match
 		if bottom[0].count != bottom[1].count:
@@ -30,11 +32,13 @@ class DataAnalysisWeightedAverages(caffe.Layer):
                 top[0].reshape(bottom[0].channels, bottom[0].channels)
 
 		self.diff = np.zeros((bottom[0].num, bottom[0].channels), dtype=np.float32)     # Features difference has descriptors dimensions
-                self.Smean = np.zeros((bottom[0].channels), dtype=np.float32)			# Similarity expected values array
-		self.Dmean = np.zeros((bottom[0].channels), dtype=np.float32)			# Dissimilarity expedted values array
+                self.Smean_batch = np.zeros((bottom[0].channels), dtype=np.float32)			# Similarity expected values array
+		self.Dmean_batch = np.zeros((bottom[0].channels), dtype=np.float32)			# Dissimilarity expedted values array
 		self.Sbatch = np.identity((bottom[0].channels), dtype=np.float32)		# Similarity covariance matrix from the current batch
 		self.Dbatch = np.identity((bottom[0].channels), dtype=np.float32)               # Dissimilarity covariance matrix from the current batch
 		self.M = np.identity((bottom[0].channels), dtype=np.float32) 			# Mahalanobis matrix
+		self.col= np.zeros((bottom[0].channels, 1), dtype=np.float32)
+ 		self.row= np.zeros((1, bottom[0].channels), dtype=np.float32)
 		 	
 		
 	def forward(self, bottom, top):
@@ -68,15 +72,21 @@ class DataAnalysisWeightedAverages(caffe.Layer):
 		Dvar = np.zeros((Dsize, bottom[0].channels, bottom[0].channels), dtype=np.float32)	# Dissimilarity variations array
 				
                 # Similarity covariance matrix computation from the current batch
-		self.Smean = np.sum(Sset, axis=0)/float(Ssize)
+		self.Smean_batch = np.sum(Sset, axis=0)/float(Ssize)
+		self.Smean = self.beta *self.Smean + (1.0-self.beta)*self.Smean_batch
 		for s in range(Ssize):
-			Svar[s,:,:]=(Sset[s,:]-self.Smean[:]).transpose() * (Sset[s,:]-self.Smean[:])
+			self.row[0,:] = (Sset[s,:]-self.Smean[:])
+			self.col[:,0] = (Sset[s,:]-self.Smean[:]).transpose()
+			Svar[s,:,:] = self.col * self.row
 		self.Sbatch = np.sum(Svar, axis=0)/float(Ssize)
 			
                 # Dissimilarity covariance matrix computation from the current batch
-		self.Dmean = np.sum(Dset, axis=0)/float(Dsize)
+		self.Dmean_batch = np.sum(Dset, axis=0)/float(Dsize)
+		self.Dmean = self.beta *self.Dmean + (1.0-self.beta)*self.Dmean_batch
 		for d in range(Dsize):
-			Dvar[d,:,:]=(Dset[d,:]-self.Dmean[:]).transpose() * (Dset[d,:]-self.Dmean[:])
+			self.row[0,:] = (Dset[s,:]-self.Dmean[:])
+			self.col[:,0] = (Dset[s,:]-self.Dmean[:]).transpose()
+			Dvar[s,:,:] = self.col * self.row
 		self.Dbatch = np.sum(Dvar, axis=0)/float(Dsize)
 
 		# Similarity and dissimilarity covariance matrixes updating by exponentially weighted moving averages
