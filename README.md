@@ -7,7 +7,7 @@ This repository includes a caffe python layer called maha_triplet_loss, which is
 <br />
 This also includes a layer to select triplets in order to speed up the learning procedure.
 
-2. select_triplet
+2. triplets_selection
 
 
 <br />
