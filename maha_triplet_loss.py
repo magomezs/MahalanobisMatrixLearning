@@ -6,7 +6,7 @@ from multiprocessing import Process, Queue
 from caffe._caffe import RawBlobVec
 from sklearn import preprocessing
 
-class TripletLossWithMM(caffe.Layer):    
+class TripletMahaLoss(caffe.Layer):    
     def setup(self, bottom, top):
         #CHECK DIMENSIONS
         assert shape(bottom[0].data) == shape(bottom[1].data)
